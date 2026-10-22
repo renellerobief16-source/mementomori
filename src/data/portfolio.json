@@ -1,0 +1,300 @@
+{
+  "profile": {
+    "name": "Renelle Robie D. Lopez",
+    "title": "Full-Stack Developer & Creative Designer",
+    "subtitle": "Web Development • Video Editing • Graphic Design & Posters",
+    "bio": "Multi-disciplinary developer and visual creator crafting clean web applications with React, cinematic video edits in Premiere & After Effects, and high-impact graphic posters with Photoshop & Illustrator.",
+    "location": "Philippines",
+    "email": "renellerobieF16@gmail.com",
+    "githubUrl": "https://github.com/renellerobief16-source",
+    "linkedinUrl": "https://www.linkedin.com/in/renelle-robie-lopez-a458b1267/?isSelfProfile=true",
+    "facebookUrl": "https://www.facebook.com/renellerobie.flordeliz",
+    "instagramUrl": "https://www.instagram.com/redmhor/?hl=en",
+    "onlinejobsUrl": "https://v2.onlinejobs.ph/jobseekers/info/5027504",
+    "status": "Open for Web & Creative Freelance Projects"
+  },
+  "webProjects": [
+    {
+      "id": "libralink",
+      "title": "Libralink — Digital Library & Catalog",
+      "category": "Full-Stack Web App",
+      "description": "Modern digital library management system with book catalog search, member borrowing workflows, and responsive interface.",
+      "image": "https://images.unsplash.com/photo-1507842229451-7973a987d609?auto=format&fit=crop&w=1200&q=80",
+      "liveUrl": "https://libralinkkk.vercel.app",
+      "githubUrl": "https://github.com/renellerobief16-source/Libralink",
+      "tools": [
+        "React",
+        "JavaScript",
+        "Tailwind CSS",
+        "Vercel"
+      ],
+      "badge": "Live Deployed"
+    },
+    {
+      "id": "dayrit-clinic",
+      "title": "Dayrit Clinic — Patient Healthcare Portal",
+      "category": "Medical Web App",
+      "description": "Healthcare appointment booking portal with clinical service breakdowns, doctor availability, and patient inquiries.",
+      "image": "https://images.unsplash.com/photo-1576091160399-112ba8d25d1d?auto=format&fit=crop&w=1200&q=80",
+      "liveUrl": "https://dayrit-clinic.vercel.app",
+      "githubUrl": "https://github.com/renellerobief16-source/dayrit-clinic",
+      "tools": [
+        "JavaScript",
+        "HTML5",
+        "CSS3",
+        "Vercel"
+      ],
+      "badge": "Live Deployed"
+    },
+    {
+      "id": "devpulse",
+      "title": "DevPulse — Developer Portfolio & Code Hub",
+      "category": "Frontend UI/UX",
+      "description": "Interactive portfolio with GitHub REST API real-time stats, glassmorphism design, and modern dark aesthetics.",
+      "image": "https://images.unsplash.com/photo-1555066931-4365d14bab8c?auto=format&fit=crop&w=1200&q=80",
+      "liveUrl": "https://github.com/renellerobief16-source",
+      "githubUrl": "https://github.com/renellerobief16-source",
+      "tools": [
+        "React 19",
+        "Vite",
+        "Tailwind CSS",
+        "GitHub API"
+      ],
+      "badge": "Active"
+    },
+    {
+      "id": "partyneeds",
+      "title": "PartyNeeds — Event Logistics & Supply Hub",
+      "category": "Web Application",
+      "description": "Event planning and party rental catalog with packages, equipment rentals, and booking estimates.",
+      "image": "https://images.unsplash.com/photo-1511795409834-ef04bbd61622?auto=format&fit=crop&w=1200&q=80",
+      "liveUrl": "https://github.com/renellerobief16-source/partyneeds",
+      "githubUrl": "https://github.com/renellerobief16-source/partyneeds",
+      "tools": [
+        "JavaScript",
+        "HTML5",
+        "CSS3"
+      ],
+      "badge": "Repository"
+    }
+  ],
+  "videoEdits": [
+    {
+      "id": "cinematic-reel",
+      "title": "Cinematic Brand Commercial Reel",
+      "category": "Commercial & Promo",
+      "duration": "0:45",
+      "software": [
+        "Premiere Pro",
+        "After Effects",
+        "DaVinci Resolve"
+      ],
+      "description": "Fast-paced kinetic edit featuring dramatic speed ramps, sound design, LUT color grading, and dynamic audio-visual synchronizations.",
+      "thumbnail": "https://images.unsplash.com/photo-1536240478700-b869070f9279?auto=format&fit=crop&w=1200&q=80",
+      "previewVideo": "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerBlazes.mp4",
+      "highlight": "Speed ramping & Sound design"
+    },
+    {
+      "id": "social-media-promo",
+      "title": "High-Energy Social Media Reel & Shorts",
+      "category": "Social Media / TikTok",
+      "duration": "0:30",
+      "software": [
+        "Premiere Pro",
+        "CapCut Pro",
+        "After Effects"
+      ],
+      "description": "Engaging 9:16 vertical video edit with animated kinetic subtitles, beat-matching zoom transitions, and vibrant overlays designed for maximum retention.",
+      "thumbnail": "https://images.unsplash.com/photo-1574717024653-61fd2cf4d44d?auto=format&fit=crop&w=1200&q=80",
+      "previewVideo": "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerEscapes.mp4",
+      "highlight": "Kinetic subtitles & Beat sync"
+    },
+    {
+      "id": "motion-graphics-vfx",
+      "title": "3D Motion Graphics & Logo Intro",
+      "category": "Visual Effects (VFX)",
+      "duration": "0:15",
+      "software": [
+        "After Effects",
+        "Blender",
+        "Illustrator"
+      ],
+      "description": "Futuristic glowing logo animation with particle trails, neon displacement maps, and custom sci-fi sound effects.",
+      "thumbnail": "https://images.unsplash.com/photo-1550745165-9bc0b252726f?auto=format&fit=crop&w=1200&q=80",
+      "previewVideo": "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerFun.mp4",
+      "highlight": "Particle simulation & 3D Lighting"
+    },
+    {
+      "id": "event-highlight",
+      "title": "Event Celebration & Festival Highlight",
+      "category": "Event Documentary",
+      "duration": "1:20",
+      "software": [
+        "Premiere Pro",
+        "DaVinci Resolve"
+      ],
+      "description": "Emotional storytelling edit capturing live event crowds, celebration atmosphere, stage lighting, and synchronized orchestral-electronic audio.",
+      "thumbnail": "https://images.unsplash.com/photo-1492684223066-81342ee5ff30?auto=format&fit=crop&w=1200&q=80",
+      "previewVideo": "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerJoyBlazes.mp4",
+      "highlight": "Multicam editing & Audio mix"
+    }
+  ],
+  "posters": [
+    {
+      "id": "tech-summit-poster",
+      "title": "Cyberpunk Tech Summit 2026",
+      "category": "Event Poster",
+      "software": [
+        "Photoshop",
+        "Illustrator"
+      ],
+      "description": "High-contrast futuristic event poster with holographic glass typography, neon wireframes, and modern grid layout.",
+      "image": "https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?auto=format&fit=crop&w=1200&q=80",
+      "dimensions": "A3 • 300 DPI Print Ready",
+      "aspect": "3:4"
+    },
+    {
+      "id": "healthcare-poster",
+      "title": "Clinic Health & Wellness Campaign",
+      "category": "Healthcare / Commercial",
+      "software": [
+        "Photoshop",
+        "Figma"
+      ],
+      "description": "Clean, trustworthy medical promotional poster highlighting patient consultation services, preventive care, and emergency hotlines.",
+      "image": "https://images.unsplash.com/photo-1584515979956-d9f6e5d09982?auto=format&fit=crop&w=1200&q=80",
+      "dimensions": "1080 x 1350px • Social & Print",
+      "aspect": "3:4"
+    },
+    {
+      "id": "music-festival-poster",
+      "title": "Neon Pulse Music Festival",
+      "category": "Entertainment Poster",
+      "software": [
+        "Photoshop",
+        "Illustrator"
+      ],
+      "description": "Vibrant festival artwork with fluid 3D abstract waves, electric cyan and magenta gradients, and expressive display typography.",
+      "image": "https://images.unsplash.com/photo-1514525253161-7a46d19cd819?auto=format&fit=crop&w=1200&q=80",
+      "dimensions": "A2 • 300 DPI",
+      "aspect": "3:4"
+    },
+    {
+      "id": "minimalist-brand-poster",
+      "title": "Modern Minimalist Studio Branding",
+      "category": "Brand Identity",
+      "software": [
+        "Illustrator",
+        "InDesign"
+      ],
+      "description": "Swiss-inspired editorial poster showcasing balanced negative space, refined serif and sans-serif pairings, and monochrome geometry.",
+      "image": "https://images.unsplash.com/photo-1600132806370-bf17e65e942f?auto=format&fit=crop&w=1200&q=80",
+      "dimensions": "A3 • Editorial Series",
+      "aspect": "3:4"
+    },
+    {
+      "id": "partyneeds-promo-poster",
+      "title": "PartyNeeds Grand Event Expo",
+      "category": "Advertising Poster",
+      "software": [
+        "Photoshop",
+        "Canva Pro"
+      ],
+      "description": "Festive commercial advertising poster featuring party rental packages, balloon arch graphics, and promotional discount badges.",
+      "image": "https://images.unsplash.com/photo-1464366400600-7168b8af9bc3?auto=format&fit=crop&w=1200&q=80",
+      "dimensions": "1080 x 1920px • Story & Print",
+      "aspect": "3:4"
+    }
+  ],
+  "certificates": [
+    {
+      "id": "cert-fullstack",
+      "title": "Full-Stack Web Development & React Architecture",
+      "issuer": "FreeCodeCamp & OpenJS Foundation",
+      "issueDate": "2025",
+      "credentialId": "FCC-FSWD-98214",
+      "category": "Software Engineering",
+      "skills": [
+        "React.js",
+        "JavaScript (ES6+)",
+        "Node.js",
+        "REST APIs",
+        "Git"
+      ],
+      "description": "Comprehensive certification covering component architecture, reactive state management, asynchronous REST APIs, and production deployment standards.",
+      "image": "https://images.unsplash.com/photo-1523289333742-be1143f6b766?auto=format&fit=crop&w=1200&q=80",
+      "badge": "Verified Certificate"
+    },
+    {
+      "id": "cert-react",
+      "title": "React Specialist & Modern Frontend Development",
+      "issuer": "Meta Frontend Professional Certification",
+      "issueDate": "2024",
+      "credentialId": "META-FRONTEND-55421",
+      "category": "Frontend Specialization",
+      "skills": [
+        "React 18/19",
+        "Hooks",
+        "Context API",
+        "Tailwind CSS",
+        "Vite"
+      ],
+      "description": "Specialized certification validating proficiency in reusable UI design systems, performance optimization, and responsive mobile-first interfaces.",
+      "image": "https://images.unsplash.com/photo-1517245386807-bb43f82c33c4?auto=format&fit=crop&w=1200&q=80",
+      "badge": "Verified Specialist"
+    },
+    {
+      "id": "cert-video-motion",
+      "title": "Video Editing & Motion Graphics Masterclass",
+      "issuer": "Adobe Certified Professional (ACP)",
+      "issueDate": "2024",
+      "credentialId": "ACP-PR-AE-77192",
+      "category": "Multimedia & Video",
+      "skills": [
+        "Premiere Pro",
+        "After Effects",
+        "Color Grading",
+        "Sound Design",
+        "VFX"
+      ],
+      "description": "Industry credential demonstrating mastery of non-linear video editing, multi-camera syncing, keyframe animations, and cinematic color correction.",
+      "image": "https://images.unsplash.com/photo-1574717024653-61fd2cf4d44d?auto=format&fit=crop&w=1200&q=80",
+      "badge": "Professional Credential"
+    },
+    {
+      "id": "cert-graphic-design",
+      "title": "Graphic Design, Typography & Brand Identity",
+      "issuer": "Adobe Creative Cloud Certification",
+      "issueDate": "2023",
+      "credentialId": "ADOBE-PS-AI-38291",
+      "category": "Visual Design",
+      "skills": [
+        "Photoshop",
+        "Illustrator",
+        "Poster Design",
+        "Layout",
+        "Print Preparation"
+      ],
+      "description": "Advanced certification covering vector illustration, visual balance, print-ready typography, raster photo manipulation, and advertising poster layouts.",
+      "image": "https://images.unsplash.com/photo-1626785774573-4b799315345d?auto=format&fit=crop&w=1200&q=80",
+      "badge": "Certified Designer"
+    },
+    {
+      "id": "cert-academic",
+      "title": "Academic Excellence & Dean's Honor Recognition",
+      "issuer": "College of Computer Studies",
+      "issueDate": "2023 — 2024",
+      "credentialId": "CCS-HONOR-10928",
+      "category": "Academic & Tech Seminars",
+      "skills": [
+        "Algorithm Design",
+        "Database Systems",
+        "Software Engineering",
+        "Team Leadership"
+      ],
+      "description": "Conferred for maintaining top academic standing in Computer Science / Information Technology, software engineering capstone projects, and campus tech leadership.",
+      "image": "https://images.unsplash.com/photo-1546410531-bb4caa6b424d?auto=format&fit=crop&w=1200&q=80",
+      "badge": "Dean's Honor"
+    }
+  ]
+}

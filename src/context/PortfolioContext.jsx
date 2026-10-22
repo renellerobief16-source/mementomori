@@ -1,54 +1,54 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
-import { creativePortfolioData } from '../data/creativePortfolioData';
+import portfolioSeed from '../data/portfolio.json';
 
 const PortfolioContext = createContext(null);
 
 const DEFAULT_PIN = '201605';
 
 export function PortfolioProvider({ children }) {
-  // Initialize state from localStorage or default seed data
+  // Initialize state from localStorage or default portfolio.json seed
   const [profile, setProfile] = useState(() => {
     try {
       const saved = localStorage.getItem('myportfolio_profile');
-      return saved ? JSON.parse(saved) : creativePortfolioData.profile;
+      return saved ? JSON.parse(saved) : portfolioSeed.profile;
     } catch {
-      return creativePortfolioData.profile;
+      return portfolioSeed.profile;
     }
   });
 
   const [webProjects, setWebProjects] = useState(() => {
     try {
       const saved = localStorage.getItem('myportfolio_web_projects');
-      return saved ? JSON.parse(saved) : creativePortfolioData.webProjects;
+      return saved ? JSON.parse(saved) : portfolioSeed.webProjects;
     } catch {
-      return creativePortfolioData.webProjects;
+      return portfolioSeed.webProjects;
     }
   });
 
   const [videoEdits, setVideoEdits] = useState(() => {
     try {
       const saved = localStorage.getItem('myportfolio_video_edits');
-      return saved ? JSON.parse(saved) : creativePortfolioData.videoEdits;
+      return saved ? JSON.parse(saved) : portfolioSeed.videoEdits;
     } catch {
-      return creativePortfolioData.videoEdits;
+      return portfolioSeed.videoEdits;
     }
   });
 
   const [posters, setPosters] = useState(() => {
     try {
       const saved = localStorage.getItem('myportfolio_posters');
-      return saved ? JSON.parse(saved) : creativePortfolioData.posters;
+      return saved ? JSON.parse(saved) : portfolioSeed.posters;
     } catch {
-      return creativePortfolioData.posters;
+      return portfolioSeed.posters;
     }
   });
 
   const [certificates, setCertificates] = useState(() => {
     try {
       const saved = localStorage.getItem('myportfolio_certificates');
-      return saved ? JSON.parse(saved) : creativePortfolioData.certificates;
+      return saved ? JSON.parse(saved) : portfolioSeed.certificates;
     } catch {
-      return creativePortfolioData.certificates;
+      return portfolioSeed.certificates;
     }
   });
 
@@ -269,6 +269,60 @@ export function PortfolioProvider({ children }) {
     setCertificates((prev) => prev.filter((item) => item.id !== id));
   };
 
+  // Get full portfolio data object matching portfolio.json schema
+  const getFullPortfolioObject = () => {
+    return {
+      version: '1.0.0',
+      lastUpdated: new Date().toISOString(),
+      profile,
+      webProjects,
+      videoEdits,
+      posters,
+      certificates,
+    };
+  };
+
+  const getFullPortfolioJSON = () => {
+    return JSON.stringify(getFullPortfolioObject(), null, 2);
+  };
+
+  const downloadPortfolioJSON = () => {
+    const jsonStr = getFullPortfolioJSON();
+    const blob = new Blob([jsonStr], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'portfolio.json';
+    a.click();
+    URL.revokeObjectURL(url);
+  };
+
+  const applyRawJSON = (jsonString) => {
+    try {
+      const parsed = JSON.parse(jsonString);
+      if (parsed.profile) setProfile(parsed.profile);
+      if (Array.isArray(parsed.webProjects)) setWebProjects(parsed.webProjects);
+      if (Array.isArray(parsed.videoEdits)) setVideoEdits(parsed.videoEdits);
+      if (Array.isArray(parsed.posters)) setPosters(parsed.posters);
+      if (Array.isArray(parsed.certificates)) setCertificates(parsed.certificates);
+      return { success: true };
+    } catch (err) {
+      return { success: false, error: err.message };
+    }
+  };
+
+  const syncWithGitSeed = () => {
+    if (portfolioSeed) {
+      if (portfolioSeed.profile) setProfile(portfolioSeed.profile);
+      if (Array.isArray(portfolioSeed.webProjects)) setWebProjects(portfolioSeed.webProjects);
+      if (Array.isArray(portfolioSeed.videoEdits)) setVideoEdits(portfolioSeed.videoEdits);
+      if (Array.isArray(portfolioSeed.posters)) setPosters(portfolioSeed.posters);
+      if (Array.isArray(portfolioSeed.certificates)) setCertificates(portfolioSeed.certificates);
+      return true;
+    }
+    return false;
+  };
+
   // Data Export, Import & Reset
   const exportData = () => {
     const backup = {
@@ -304,11 +358,11 @@ export function PortfolioProvider({ children }) {
   };
 
   const resetToDefaults = () => {
-    setProfile(creativePortfolioData.profile);
-    setWebProjects(creativePortfolioData.webProjects);
-    setVideoEdits(creativePortfolioData.videoEdits);
-    setPosters(creativePortfolioData.posters);
-    setCertificates(creativePortfolioData.certificates);
+    setProfile(portfolioSeed.profile);
+    setWebProjects(portfolioSeed.webProjects);
+    setVideoEdits(portfolioSeed.videoEdits);
+    setPosters(portfolioSeed.posters);
+    setCertificates(portfolioSeed.certificates);
     setAdminPin(DEFAULT_PIN);
     localStorage.removeItem('myportfolio_profile');
     localStorage.removeItem('myportfolio_web_projects');
@@ -347,6 +401,11 @@ export function PortfolioProvider({ children }) {
         exportData,
         importData,
         resetToDefaults,
+        getFullPortfolioObject,
+        getFullPortfolioJSON,
+        downloadPortfolioJSON,
+        applyRawJSON,
+        syncWithGitSeed,
       }}
     >
       {children}

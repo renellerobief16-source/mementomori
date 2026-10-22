@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import {
   Lock,
@@ -30,6 +30,13 @@ import {
   AlertOctagon,
   Loader2,
   Video,
+  Code,
+  Copy,
+  RefreshCw,
+  CheckCheck,
+  Sparkles,
+  HelpCircle,
+  FileCode,
 } from 'lucide-react';
 import { usePortfolio } from '../context/PortfolioContext';
 import confetti from 'canvas-confetti';
@@ -71,6 +78,11 @@ export default function AdminPage() {
     exportData,
     importData,
     resetToDefaults,
+    getFullPortfolioObject,
+    getFullPortfolioJSON,
+    downloadPortfolioJSON,
+    applyRawJSON,
+    syncWithGitSeed,
   } = usePortfolio();
 
   // PIN entry state
@@ -78,6 +90,12 @@ export default function AdminPage() {
   const [pinError, setPinError] = useState(false);
   const [activeTab, setActiveTab] = useState('profile');
   const [toastMessage, setToastMessage] = useState(null);
+
+  // Raw JSON Editor states
+  const [rawJsonText, setRawJsonText] = useState('');
+  const [jsonSyntaxError, setJsonSyntaxError] = useState(null);
+  const [jsonCopied, setJsonCopied] = useState(false);
+  const [jsonSuccess, setJsonSuccess] = useState(false);
 
   // Modal / Editing states
   const [editingItem, setEditingItem] = useState(null); // { type: 'web'|'video'|'poster'|'cert', data: {...}, isNew: bool }
@@ -98,6 +116,71 @@ export default function AdminPage() {
   const showToast = (msg) => {
     setToastMessage(msg);
     setTimeout(() => setToastMessage(null), 3500);
+  };
+
+  // Sync rawJsonText when switching to JSON tab
+  useEffect(() => {
+    if (activeTab === 'json') {
+      setRawJsonText(getFullPortfolioJSON());
+      setJsonSyntaxError(null);
+    }
+  }, [activeTab]);
+
+  // JSON Action Handlers
+  const handlePrettifyJson = () => {
+    try {
+      const parsed = JSON.parse(rawJsonText);
+      const formatted = JSON.stringify(parsed, null, 2);
+      setRawJsonText(formatted);
+      setJsonSyntaxError(null);
+      showToast('JSON formatted & validated successfully!');
+    } catch (err) {
+      setJsonSyntaxError(err.message);
+    }
+  };
+
+  const handleCopyJson = () => {
+    navigator.clipboard.writeText(rawJsonText);
+    setJsonCopied(true);
+    setTimeout(() => setJsonCopied(false), 2500);
+    showToast('Copied full JSON to clipboard!');
+  };
+
+  const handleApplyJson = () => {
+    try {
+      JSON.parse(rawJsonText);
+    } catch (err) {
+      setJsonSyntaxError(`Syntax Error: ${err.message}`);
+      return;
+    }
+
+    const res = applyRawJSON(rawJsonText);
+    if (res.success) {
+      setJsonSyntaxError(null);
+      setJsonSuccess(true);
+      setTimeout(() => setJsonSuccess(false), 3000);
+      setProfileForm(profile);
+      showToast('JSON changes saved & applied to live portfolio!');
+    } else {
+      setJsonSyntaxError(res.error || 'Failed to apply JSON');
+    }
+  };
+
+  const handleRefreshJsonFromState = () => {
+    setRawJsonText(getFullPortfolioJSON());
+    setJsonSyntaxError(null);
+    showToast('JSON reloaded from active state.');
+  };
+
+  const handleSyncFromSeed = () => {
+    if (window.confirm('Sync with Git Seed? This will reload the default portfolio.json records from the repository.')) {
+      syncWithGitSeed();
+      setTimeout(() => {
+        setRawJsonText(getFullPortfolioJSON());
+        setProfileForm(profile);
+        showToast('Successfully synced with Git Seed!');
+      }, 50);
+    }
   };
 
   // Handle PIN input
@@ -404,6 +487,15 @@ export default function AdminPage() {
         </div>
 
         <div className="flex flex-wrap items-center gap-2 sm:gap-3 w-full md:w-auto">
+          <button
+            onClick={downloadPortfolioJSON}
+            className="flex-1 md:flex-initial px-4 py-2.5 rounded-xl bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-white text-xs font-mono font-bold transition-all shadow-md shadow-cyan-500/20 active:scale-95 flex items-center justify-center gap-1.5"
+            title="Download portfolio.json to keep a permanent record"
+          >
+            <Download className="w-3.5 h-3.5" />
+            <span>Download portfolio.json</span>
+          </button>
+
           <Link
             to="/"
             className="flex-1 md:flex-initial px-4 py-2.5 rounded-xl bg-slate-100 hover:bg-slate-200 dark:bg-slate-900 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-300 border border-slate-300 dark:border-white/10 text-xs font-mono font-medium transition-all flex items-center justify-center gap-1.5"
@@ -438,6 +530,7 @@ export default function AdminPage() {
           { id: 'videos', label: 'Video Editing', icon: Film, count: videoEdits.length },
           { id: 'posters', label: 'Posters & Graphics', icon: Palette, count: posters.length },
           { id: 'certificates', label: 'Certificates', icon: Award, count: certificates.length },
+          { id: 'json', label: 'Raw JSON Editor', icon: Code, count: null },
           { id: 'settings', label: 'Backup & Reset', icon: Settings, count: null },
         ].map((tab) => {
           const Icon = tab.icon;
@@ -445,7 +538,13 @@ export default function AdminPage() {
           return (
             <button
               key={tab.id}
-              onClick={() => setActiveTab(tab.id)}
+              onClick={() => {
+                if (tab.id === 'json') {
+                  setRawJsonText(getFullPortfolioJSON());
+                  setJsonSyntaxError(null);
+                }
+                setActiveTab(tab.id);
+              }}
               className={`px-4 py-2.5 rounded-2xl text-xs sm:text-sm font-medium transition-all whitespace-nowrap flex items-center gap-2 ${
                 isActive
                   ? 'bg-slate-900 text-white dark:bg-white dark:text-slate-950 shadow-md scale-105'
@@ -1088,6 +1187,213 @@ export default function AdminPage() {
                 </div>
               </div>
             ))}
+          </div>
+        </div>
+      )}
+
+      {/* ==========================================
+          TAB: RAW JSON EDITOR & VIEWER
+      ========================================== */}
+      {activeTab === 'json' && (
+        <div className="glass-card p-6 sm:p-8 rounded-3xl border border-slate-200 dark:border-white/10 space-y-6 animate-fadeIn">
+          {/* Header & Status */}
+          <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-slate-200 dark:border-white/10 pb-6">
+            <div>
+              <div className="flex items-center gap-2">
+                <div className="p-2 rounded-xl bg-cyan-500/10 text-cyan-500">
+                  <Code className="w-5 h-5" />
+                </div>
+                <h2 className="text-lg sm:text-xl font-bold text-slate-900 dark:text-white">
+                  Raw JSON Record & Editor
+                </h2>
+                <span className="px-2.5 py-0.5 rounded-full bg-cyan-500/10 border border-cyan-500/20 text-cyan-600 dark:text-cyan-400 text-xs font-mono font-bold">
+                  portfolio.json
+                </span>
+              </div>
+              <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
+                Dito nakatabi ang master record ng buong portfolio mo. Pwede mong i-edit nang direkta, kopyahin, o i-download para i-commit sa GitHub/Vercel.
+              </p>
+            </div>
+
+            {/* Validation & Stat Badges */}
+            <div className="flex flex-wrap items-center gap-2">
+              {jsonSyntaxError ? (
+                <div className="px-3 py-1.5 rounded-xl bg-rose-500/10 border border-rose-500/30 text-rose-600 dark:text-rose-400 text-xs font-mono font-bold flex items-center gap-1.5 animate-pulse">
+                  <AlertTriangle className="w-3.5 h-3.5" />
+                  <span>Syntax Error</span>
+                </div>
+              ) : (
+                <div className="px-3 py-1.5 rounded-xl bg-emerald-500/10 border border-emerald-500/30 text-emerald-600 dark:text-emerald-400 text-xs font-mono font-bold flex items-center gap-1.5">
+                  <CheckCircle2 className="w-3.5 h-3.5" />
+                  <span>Valid JSON Syntax</span>
+                </div>
+              )}
+
+              <span className="px-3 py-1.5 rounded-xl bg-slate-100 dark:bg-slate-900/60 text-slate-500 dark:text-slate-400 border border-slate-200 dark:border-white/5 text-xs font-mono">
+                {rawJsonText.split('\n').length} lines • {rawJsonText.length.toLocaleString()} chars
+              </span>
+            </div>
+          </div>
+
+          {/* Action Toolbar */}
+          <div className="flex flex-wrap items-center justify-between gap-3 bg-slate-50 dark:bg-slate-950/60 p-3 sm:p-4 rounded-2xl border border-slate-200 dark:border-white/5">
+            <div className="flex flex-wrap items-center gap-2">
+              <button
+                type="button"
+                onClick={handlePrettifyJson}
+                className="px-3.5 py-2 rounded-xl bg-slate-200 hover:bg-slate-300 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 text-xs font-mono font-semibold flex items-center gap-1.5 transition-all active:scale-95"
+                title="Format JSON with indentation"
+              >
+                <Sparkles className="w-3.5 h-3.5 text-amber-500" />
+                <span>Format / Prettify</span>
+              </button>
+
+              <button
+                type="button"
+                onClick={handleRefreshJsonFromState}
+                className="px-3.5 py-2 rounded-xl bg-slate-200 hover:bg-slate-300 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 text-xs font-mono font-semibold flex items-center gap-1.5 transition-all active:scale-95"
+                title="Reload current active data"
+              >
+                <RefreshCw className="w-3.5 h-3.5" />
+                <span>Reload Active State</span>
+              </button>
+
+              <button
+                type="button"
+                onClick={handleSyncFromSeed}
+                className="px-3.5 py-2 rounded-xl bg-slate-200 hover:bg-slate-300 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 text-xs font-mono font-semibold flex items-center gap-1.5 transition-all active:scale-95"
+                title="Sync with repository default seed"
+              >
+                <RotateCcw className="w-3.5 h-3.5 text-cyan-500" />
+                <span>Sync with Git Seed</span>
+              </button>
+            </div>
+
+            <div className="flex flex-wrap items-center gap-2">
+              <button
+                type="button"
+                onClick={handleCopyJson}
+                className={`px-3.5 py-2 rounded-xl border text-xs font-mono font-bold flex items-center gap-1.5 transition-all active:scale-95 ${
+                  jsonCopied
+                    ? 'bg-emerald-500 text-white border-emerald-500'
+                    : 'bg-slate-200 hover:bg-slate-300 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 border-slate-300 dark:border-white/10'
+                }`}
+              >
+                {jsonCopied ? <CheckCheck className="w-3.5 h-3.5" /> : <Copy className="w-3.5 h-3.5" />}
+                <span>{jsonCopied ? 'Copied!' : 'Copy JSON'}</span>
+              </button>
+
+              <button
+                type="button"
+                onClick={downloadPortfolioJSON}
+                className="px-3.5 py-2 rounded-xl bg-cyan-500 hover:bg-cyan-600 text-white text-xs font-mono font-bold flex items-center gap-1.5 transition-all shadow-md shadow-cyan-500/20 active:scale-95"
+              >
+                <Download className="w-3.5 h-3.5" />
+                <span>Download portfolio.json</span>
+              </button>
+
+              <button
+                type="button"
+                onClick={handleApplyJson}
+                className={`px-4 py-2 rounded-xl text-white text-xs font-mono font-bold flex items-center gap-1.5 transition-all shadow-md active:scale-95 ${
+                  jsonSuccess
+                    ? 'bg-emerald-600 shadow-emerald-500/20'
+                    : 'bg-gradient-to-r from-violet-600 to-indigo-600 hover:from-violet-500 hover:to-indigo-500 shadow-violet-500/20'
+                }`}
+              >
+                {jsonSuccess ? <CheckCircle2 className="w-3.5 h-3.5" /> : <Save className="w-3.5 h-3.5" />}
+                <span>{jsonSuccess ? 'Applied!' : 'Save & Apply Changes'}</span>
+              </button>
+            </div>
+          </div>
+
+          {/* Syntax Error Alert */}
+          {jsonSyntaxError && (
+            <div className="p-4 rounded-2xl bg-rose-500/10 border border-rose-500/30 flex items-start gap-3">
+              <AlertTriangle className="w-5 h-5 text-rose-500 shrink-0 mt-0.5" />
+              <div>
+                <p className="text-xs font-mono font-bold text-rose-600 dark:text-rose-400">
+                  JSON Syntax Error:
+                </p>
+                <p className="text-xs font-mono text-slate-600 dark:text-slate-300 mt-0.5 break-all">
+                  {jsonSyntaxError}
+                </p>
+                <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-1">
+                  Tip: Siguraduhing kumpleto ang mga comma (,), double quotes (&quot;), at curly brackets (&#123; &#125;).
+                </p>
+              </div>
+            </div>
+          )}
+
+          {/* Interactive Code Editor Textarea */}
+          <div className="relative rounded-2xl overflow-hidden border border-slate-300 dark:border-slate-800 shadow-2xl bg-slate-950">
+            <div className="flex items-center justify-between px-4 py-2.5 bg-slate-900 border-b border-slate-800 text-xs font-mono text-slate-400">
+              <div className="flex items-center gap-2">
+                <span className="w-3 h-3 rounded-full bg-rose-500/80 inline-block"></span>
+                <span className="w-3 h-3 rounded-full bg-amber-500/80 inline-block"></span>
+                <span className="w-3 h-3 rounded-full bg-emerald-500/80 inline-block"></span>
+                <span className="ml-2 text-slate-300 font-semibold">src/data/portfolio.json</span>
+              </div>
+              <span className="text-[11px] text-slate-500">Live JSON Code Editor</span>
+            </div>
+
+            <textarea
+              value={rawJsonText}
+              onChange={(e) => {
+                const val = e.target.value;
+                setRawJsonText(val);
+                try {
+                  JSON.parse(val);
+                  setJsonSyntaxError(null);
+                } catch (err) {
+                  setJsonSyntaxError(err.message);
+                }
+              }}
+              spellCheck={false}
+              autoCapitalize="none"
+              autoComplete="off"
+              className="w-full h-[520px] p-4 sm:p-6 bg-transparent text-emerald-400 dark:text-emerald-300 font-mono text-xs sm:text-sm leading-relaxed focus:outline-none resize-y selection:bg-cyan-500/30 selection:text-white"
+              placeholder="// Paste or edit your JSON here..."
+            />
+          </div>
+
+          {/* Permanent Record Instructions Guide */}
+          <div className="p-6 rounded-3xl bg-gradient-to-br from-cyan-500/5 via-violet-500/5 to-transparent border border-cyan-500/20 space-y-4">
+            <div className="flex items-center gap-2.5 text-cyan-600 dark:text-cyan-400 font-bold text-sm">
+              <FileCode className="w-4 h-4" />
+              <span>Gabay para Permanenteng Hindi Mawala ang Data (Git & Vercel Record)</span>
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-xs text-slate-600 dark:text-slate-300">
+              <div className="p-4 rounded-2xl bg-white/40 dark:bg-slate-900/40 border border-slate-200 dark:border-white/5 space-y-1.5">
+                <span className="w-6 h-6 rounded-lg bg-cyan-500/20 text-cyan-600 dark:text-cyan-400 font-mono font-bold flex items-center justify-center text-xs">
+                  1
+                </span>
+                <p className="font-bold text-slate-900 dark:text-white">I-download ang JSON</p>
+                <p className="text-slate-500 dark:text-slate-400">
+                  I-click ang <strong>&quot;Download portfolio.json&quot;</strong> sa itaas pagkatapos mag-edit o mag-add ng projects.
+                </p>
+              </div>
+
+              <div className="p-4 rounded-2xl bg-white/40 dark:bg-slate-900/40 border border-slate-200 dark:border-white/5 space-y-1.5">
+                <span className="w-6 h-6 rounded-lg bg-violet-500/20 text-violet-600 dark:text-violet-400 font-mono font-bold flex items-center justify-center text-xs">
+                  2
+                </span>
+                <p className="font-bold text-slate-900 dark:text-white">Palitan ang Code Seed</p>
+                <p className="text-slate-500 dark:text-slate-400">
+                  I-save o i-replace ang na-download na file sa loob ng iyong folder: <code className="text-cyan-500">src/data/portfolio.json</code>.
+                </p>
+              </div>
+
+              <div className="p-4 rounded-2xl bg-white/40 dark:bg-slate-900/40 border border-slate-200 dark:border-white/5 space-y-1.5">
+                <span className="w-6 h-6 rounded-lg bg-emerald-500/20 text-emerald-600 dark:text-emerald-400 font-mono font-bold flex items-center justify-center text-xs">
+                  3
+                </span>
+                <p className="font-bold text-slate-900 dark:text-white">I-push sa GitHub & Vercel</p>
+                <p className="text-slate-500 dark:text-slate-400">
+                  Patakbuhin ang <code className="text-emerald-500">git add . && git commit -m &quot;update&quot; && git push</code>. Permanenteng naka-save na ang lahat sa cloud!
+                </p>
+              </div>
+            </div>
           </div>
         </div>
       )}
