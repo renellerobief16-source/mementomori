@@ -41,6 +41,7 @@ import {
 import { usePortfolio } from '../context/PortfolioContext';
 import confetti from 'canvas-confetti';
 import SmartVideoPlayer from '../components/SmartVideoPlayer';
+import MediaDropzone from '../components/MediaDropzone';
 import {
   saveVideoBlob,
   generateThumbnailFromVideo,
@@ -236,9 +237,9 @@ export default function AdminPage() {
     showToast('Profile information successfully saved!');
   };
 
-  // File upload helper (converts local file to base64 Data URL)
-  const handleFileUpload = (e, callback) => {
-    const file = e.target.files?.[0];
+  // File upload helper (converts local file to base64 Data URL, supports drag & drop File or Event)
+  const handleFileUpload = (fileOrEvent, callback) => {
+    const file = fileOrEvent?.target ? fileOrEvent.target.files?.[0] : fileOrEvent;
     if (file) {
       if (file.size > 5 * 1024 * 1024) {
         alert('File size is larger than 5MB. Please choose a smaller image.');
@@ -252,9 +253,9 @@ export default function AdminPage() {
     }
   };
 
-  // Video upload helper (stores file in IndexedDB, auto-extracts duration and thumbnail)
-  const handleVideoUpload = async (e) => {
-    const file = e.target.files?.[0];
+  // Video upload helper (stores file in IndexedDB, auto-extracts duration and thumbnail, supports drag & drop File or Event)
+  const handleVideoUpload = async (fileOrEvent) => {
+    const file = fileOrEvent?.target ? fileOrEvent.target.files?.[0] : fileOrEvent;
     if (!file) return;
 
     setUploadingVideo(true);
@@ -281,13 +282,13 @@ export default function AdminPage() {
           ...prev.data,
           id: videoId,
           previewVideo: videoUri,
-          duration: duration || prev.data.duration || '0:30',
-          thumbnail: thumb || prev.data.thumbnail,
-          title: prev.data.title || file.name.replace(/\.[^/.]+$/, ''),
+          duration: duration || prev?.data?.duration || '0:30',
+          thumbnail: thumb || prev?.data?.thumbnail,
+          title: prev?.data?.title || file.name.replace(/\.[^/.]+$/, ''),
         },
       }));
 
-      showToast('Video successfully uploaded to IndexedDB storage!');
+      showToast('Video processed & saved to IndexedDB storage!');
     } catch (err) {
       console.error('Video upload failed', err);
       alert('Failed to process video file. Please ensure it is an MP4, WebM, or MOV video.');
@@ -1647,155 +1648,168 @@ export default function AdminPage() {
                 )}
               </div>
 
-              {/* Media URL + File Upload Hybrid */}
-              <div>
-                <label className="block text-xs font-mono text-slate-600 dark:text-slate-300 mb-1">
-                  {editingItem.type === 'video' ? 'Thumbnail Image URL' : 'Image URL or Upload'}
-                </label>
-                <div className="flex gap-2">
-                  <input
-                    type="text"
-                    value={
-                      editingItem.type === 'video'
-                        ? editingItem.data.thumbnail || ''
-                        : editingItem.data.image || ''
-                    }
-                    onChange={(e) =>
+              {/* DRAG-AND-DROP MEDIA SECTION BASED ON ITEM TYPE */}
+              {editingItem.type === 'video' ? (
+                <div className="space-y-4">
+                  {/* 1. Drag & Drop Video File / Stream */}
+                  <MediaDropzone
+                    type="video"
+                    value={editingItem.data.previewVideo || ''}
+                    poster={editingItem.data.thumbnail}
+                    onChange={(val) =>
                       setEditingItem({
                         ...editingItem,
-                        data: {
-                          ...editingItem.data,
-                          [editingItem.type === 'video' ? 'thumbnail' : 'image']: e.target.value,
-                        },
+                        data: { ...editingItem.data, previewVideo: val },
                       })
                     }
-                    placeholder="https://... or upload below"
-                    className="flex-1 px-3.5 py-2 rounded-xl bg-slate-50 dark:bg-slate-950/60 border border-slate-200 dark:border-white/10 text-xs font-mono text-slate-900 dark:text-white focus:outline-none focus:border-cyan-500"
+                    onFileUpload={handleVideoUpload}
+                    loading={uploadingVideo}
+                    loadingText="Processing video & auto-extracting thumbnail..."
+                    label="Video Source File or Stream Link"
+                    hint="Drag & drop MP4/WebM or paste YouTube/Vimeo"
+                    badge="Direct Drag & Drop"
+                    placeholderUrl="Paste YouTube, Vimeo, or direct video URL..."
                   />
-                  <label className="cursor-pointer px-3 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 border border-slate-300 dark:border-white/10 text-xs font-mono flex items-center gap-1.5 whitespace-nowrap">
-                    <Upload className="w-3.5 h-3.5" />
-                    <span>Upload File</span>
-                    <input
-                      type="file"
-                      accept="image/*"
-                      className="hidden"
-                      onChange={(e) =>
-                        handleFileUpload(e, (dataUrl) => {
-                          setEditingItem({
-                            ...editingItem,
-                            data: {
-                              ...editingItem.data,
-                              [editingItem.type === 'video' ? 'thumbnail' : 'image']: dataUrl,
-                            },
-                          });
-                        })
-                      }
-                    />
-                  </label>
-                </div>
-              </div>
 
-              {/* Type specific extra fields */}
-              {editingItem.type === 'web' && (
-                <div className="grid grid-cols-2 gap-3">
-                  <div>
-                    <label className="block text-xs font-mono text-slate-600 dark:text-slate-300 mb-1">
-                      Live Website URL
-                    </label>
-                    <input
-                      type="url"
-                      value={editingItem.data.liveUrl || ''}
-                      onChange={(e) =>
-                        setEditingItem({
-                          ...editingItem,
-                          data: { ...editingItem.data, liveUrl: e.target.value },
-                        })
-                      }
-                      placeholder="https://..."
-                      className="w-full px-3.5 py-2 rounded-xl bg-slate-50 dark:bg-slate-950/60 border border-slate-200 dark:border-white/10 text-xs font-mono text-slate-900 dark:text-white"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-xs font-mono text-slate-600 dark:text-slate-300 mb-1">
-                      GitHub URL
-                    </label>
-                    <input
-                      type="url"
-                      value={editingItem.data.githubUrl || ''}
-                      onChange={(e) =>
-                        setEditingItem({
-                          ...editingItem,
-                          data: { ...editingItem.data, githubUrl: e.target.value },
-                        })
-                      }
-                      placeholder="https://github.com/..."
-                      className="w-full px-3.5 py-2 rounded-xl bg-slate-50 dark:bg-slate-950/60 border border-slate-200 dark:border-white/10 text-xs font-mono text-slate-900 dark:text-white"
-                    />
-                  </div>
+                  {/* 2. Drag & Drop Video Thumbnail / Poster Picture */}
+                  <MediaDropzone
+                    type="image"
+                    value={editingItem.data.thumbnail || ''}
+                    onChange={(val) =>
+                      setEditingItem({
+                        ...editingItem,
+                        data: { ...editingItem.data, thumbnail: val },
+                      })
+                    }
+                    onFileUpload={(file) => {
+                      handleFileUpload(file, (dataUrl) => {
+                        setEditingItem((prev) => ({
+                          ...prev,
+                          data: { ...prev.data, thumbnail: dataUrl },
+                        }));
+                      });
+                    }}
+                    label="Video Thumbnail / Poster Picture"
+                    hint="Auto-extracted from video, or drop custom picture"
+                    badge="Auto / Custom"
+                    aspectRatio="16/9"
+                    placeholderUrl="https://... custom thumbnail link or drop picture"
+                  />
                 </div>
-              )}
-
-              {editingItem.type === 'video' && (
+              ) : editingItem.type === 'web' ? (
                 <div className="space-y-3">
-                  <div>
-                    <label className="block text-xs font-mono text-slate-600 dark:text-slate-300 mb-1 flex items-center justify-between">
-                      <span>Video Source (File Upload or Web Link)</span>
-                      {uploadingVideo && (
-                        <span className="text-[11px] font-mono text-violet-500 flex items-center gap-1 font-semibold">
-                          <Loader2 className="w-3.5 h-3.5 animate-spin" /> Saving video to IndexedDB...
-                        </span>
-                      )}
-                    </label>
+                  <MediaDropzone
+                    type="image"
+                    value={editingItem.data.image || ''}
+                    onChange={(val) =>
+                      setEditingItem({
+                        ...editingItem,
+                        data: { ...editingItem.data, image: val },
+                      })
+                    }
+                    onFileUpload={(file) => {
+                      handleFileUpload(file, (dataUrl) => {
+                        setEditingItem((prev) => ({
+                          ...prev,
+                          data: { ...prev.data, image: dataUrl },
+                        }));
+                      });
+                    }}
+                    label="Project Preview Screenshot"
+                    hint="Drag & drop screenshot or paste URL"
+                    badge="16:9 Landscape"
+                    aspectRatio="16/9"
+                    placeholderUrl="https://... image link or drop screenshot"
+                  />
 
-                    <div className="flex gap-2">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    <div>
+                      <label className="block text-xs font-mono text-slate-600 dark:text-slate-300 mb-1">
+                        Live Website URL
+                      </label>
                       <input
-                        type="text"
-                        value={editingItem.data.previewVideo || ''}
+                        type="url"
+                        value={editingItem.data.liveUrl || ''}
                         onChange={(e) =>
                           setEditingItem({
                             ...editingItem,
-                            data: { ...editingItem.data, previewVideo: e.target.value },
+                            data: { ...editingItem.data, liveUrl: e.target.value },
                           })
                         }
-                        placeholder="Paste YouTube, Vimeo, or direct MP4 link..."
-                        className="flex-1 px-3.5 py-2.5 rounded-xl bg-slate-50 dark:bg-slate-950/60 border border-slate-200 dark:border-white/10 text-xs font-mono text-slate-900 dark:text-white focus:outline-none focus:border-violet-500"
+                        placeholder="https://..."
+                        className="w-full px-3.5 py-2 rounded-xl bg-slate-50 dark:bg-slate-950/60 border border-slate-200 dark:border-white/10 text-xs font-mono text-slate-900 dark:text-white"
                       />
-
-                      <label className="cursor-pointer px-4 py-2.5 rounded-xl bg-violet-600 hover:bg-violet-700 text-white text-xs font-mono font-bold flex items-center gap-1.5 whitespace-nowrap active:scale-95 transition-all shadow-md shadow-violet-600/20">
-                        <Upload className="w-4 h-4" />
-                        <span>Upload Video File</span>
-                        <input
-                          type="file"
-                          accept="video/mp4,video/webm,video/quicktime,video/ogg"
-                          className="hidden"
-                          onChange={handleVideoUpload}
-                        />
+                    </div>
+                    <div>
+                      <label className="block text-xs font-mono text-slate-600 dark:text-slate-300 mb-1">
+                        GitHub URL
                       </label>
+                      <input
+                        type="url"
+                        value={editingItem.data.githubUrl || ''}
+                        onChange={(e) =>
+                          setEditingItem({
+                            ...editingItem,
+                            data: { ...editingItem.data, githubUrl: e.target.value },
+                          })
+                        }
+                        placeholder="https://github.com/..."
+                        className="w-full px-3.5 py-2 rounded-xl bg-slate-50 dark:bg-slate-950/60 border border-slate-200 dark:border-white/10 text-xs font-mono text-slate-900 dark:text-white"
+                      />
                     </div>
-
-                    <p className="text-[11px] font-mono text-slate-400 mt-1">
-                      💡 Supports direct MP4/WebM files (auto-saves to IndexedDB without size limits + generates thumbnail) or YouTube/Vimeo links.
-                    </p>
                   </div>
-
-                  {/* Live Video Preview Box */}
-                  {editingItem.data.previewVideo && (
-                    <div className="space-y-1">
-                      <span className="text-[11px] font-mono text-slate-400 block">
-                        Live Video Player Preview:
-                      </span>
-                      <div className="rounded-2xl overflow-hidden border border-slate-200 dark:border-white/10 bg-black aspect-video relative shadow-inner">
-                        <SmartVideoPlayer
-                          src={editingItem.data.previewVideo}
-                          poster={editingItem.data.thumbnail}
-                          controls={true}
-                          autoPlay={false}
-                          title={editingItem.data.title || 'Video Preview'}
-                          className="w-full h-full object-contain"
-                        />
-                      </div>
-                    </div>
-                  )}
+                </div>
+              ) : editingItem.type === 'poster' ? (
+                <div>
+                  <MediaDropzone
+                    type="image"
+                    value={editingItem.data.image || ''}
+                    onChange={(val) =>
+                      setEditingItem({
+                        ...editingItem,
+                        data: { ...editingItem.data, image: val },
+                      })
+                    }
+                    onFileUpload={(file) => {
+                      handleFileUpload(file, (dataUrl) => {
+                        setEditingItem((prev) => ({
+                          ...prev,
+                          data: { ...prev.data, image: dataUrl },
+                        }));
+                      });
+                    }}
+                    label="Poster Artwork Graphic"
+                    hint="Drag & drop high-res artwork or paste URL"
+                    badge="3:4 Portrait"
+                    aspectRatio="3/4"
+                    placeholderUrl="https://... poster image link or drop artwork"
+                  />
+                </div>
+              ) : (
+                <div>
+                  <MediaDropzone
+                    type="image"
+                    value={editingItem.data.image || ''}
+                    onChange={(val) =>
+                      setEditingItem({
+                        ...editingItem,
+                        data: { ...editingItem.data, image: val },
+                      })
+                    }
+                    onFileUpload={(file) => {
+                      handleFileUpload(file, (dataUrl) => {
+                        setEditingItem((prev) => ({
+                          ...prev,
+                          data: { ...prev.data, image: dataUrl },
+                        }));
+                      });
+                    }}
+                    label="Certificate Credential Document"
+                    hint="Drag & drop certificate image or paste URL"
+                    badge="4:3 Certificate"
+                    aspectRatio="4/3"
+                    placeholderUrl="https://... certificate image link or drop document"
+                  />
                 </div>
               )}
 
