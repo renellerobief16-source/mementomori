@@ -1,6 +1,6 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { ArrowUp, Heart, Mail, Lock } from 'lucide-react';
+import { ArrowUp, Heart, Mail } from 'lucide-react';
 import { Github, Linkedin, Facebook, Instagram, OnlineJobs } from './Icons';
 import { usePortfolio } from '../context/PortfolioContext';
 import profilePhoto from '../assets/profile.png';
@@ -114,16 +114,6 @@ export default function Footer() {
                 </a>
               );
             })}
-
-            {/* Admin Access Lock Button */}
-            <Link
-              to="/admin"
-              className="p-2.5 rounded-xl bg-slate-100 dark:bg-slate-800/80 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-500 hover:text-cyan-500 dark:text-slate-400 dark:hover:text-cyan-400 border border-slate-300 dark:border-white/5 transition-all duration-300 hover:scale-110 active:scale-95"
-              aria-label="Admin CMS Access"
-              title="Admin & Edit Portfolio"
-            >
-              <Lock className="w-4 h-4" />
-            </Link>
 
             {/* Scroll to Top */}
             <button

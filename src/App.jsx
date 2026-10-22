@@ -1,5 +1,5 @@
-import React, { useEffect } from 'react';
-import { BrowserRouter, Routes, Route, useLocation } from 'react-router-dom';
+import React, { useState, useRef, useEffect } from 'react';
+import { BrowserRouter, Routes, Route, useLocation, useNavigate } from 'react-router-dom';
 import { ThemeProvider } from './context/ThemeContext';
 import InteractiveBackground from './components/InteractiveBackground';
 import Navbar from './components/Navbar';
@@ -26,12 +26,64 @@ function ScrollToTop() {
   return null;
 }
 
+// Global Alt + A listener to smoothly toggle the Admin Panel from anywhere
+function AdminShortcutListener() {
+  const navigate = useNavigate();
+  const location = useLocation();
+  const previousPathRef = useRef('/');
+  const [toast, setToast] = useState(null);
+
+  useEffect(() => {
+    const handleKeyDown = (e) => {
+      // Check for Alt + A (case-insensitive) or Option + A
+      if (e.altKey && (e.key === 'a' || e.key === 'A' || e.code === 'KeyA')) {
+        const isFocusedInInput = ['INPUT', 'TEXTAREA'].includes(document.activeElement?.tagName);
+
+        // If inside admin and focused in an input/textarea, do not interrupt editing
+        if (location.pathname === '/admin' && isFocusedInInput) {
+          return;
+        }
+
+        e.preventDefault();
+
+        if (location.pathname === '/admin') {
+          const returnTo = previousPathRef.current || '/';
+          setToast('⚡ Alt + A: Returning to portfolio...');
+          navigate(returnTo);
+        } else {
+          previousPathRef.current = location.pathname;
+          setToast('⚡ Alt + A: Opening Admin Panel...');
+          navigate('/admin');
+        }
+
+        setTimeout(() => setToast(null), 2500);
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [location.pathname, navigate]);
+
+  if (!toast) return null;
+
+  return (
+    <div className="fixed top-24 right-6 z-50 px-4 py-2.5 rounded-2xl bg-slate-900/95 dark:bg-slate-900/95 text-white font-mono text-xs font-bold shadow-2xl border border-cyan-500/40 backdrop-blur-md flex items-center gap-2.5 animate-bounce">
+      <span className="relative flex h-2 w-2">
+        <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-cyan-400 opacity-75"></span>
+        <span className="relative inline-flex rounded-full h-2 w-2 bg-cyan-500"></span>
+      </span>
+      <span>{toast}</span>
+    </div>
+  );
+}
+
 export default function App() {
   return (
     <ThemeProvider>
       <PortfolioProvider>
         <BrowserRouter>
           <ScrollToTop />
+          <AdminShortcutListener />
           <div className="relative min-h-screen bg-[#f8fafc] dark:bg-[#070b14] text-slate-900 dark:text-slate-100 flex flex-col selection:bg-cyan-500/30 selection:text-cyan-700 dark:selection:text-cyan-200 transition-colors duration-300">
             {/* Dynamic Background Canvas */}
             <InteractiveBackground />
