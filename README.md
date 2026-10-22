@@ -10,3 +10,6 @@ Modern, high-performance creative and developer portfolio showcasing Full-Stack 
 
 ## 🚀 Live Link
 - **Production URL:** [https://mementomori-kappa.vercel.app/](https://mementomori-kappa.vercel.app/)
+
+## 🔒 Admin Access
+- Press `Alt + A` anywhere on the site to toggle the Admin Panel.
