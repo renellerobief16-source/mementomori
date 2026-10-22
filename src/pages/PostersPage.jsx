@@ -90,14 +90,14 @@ export default function PostersPage() {
                 </div>
               </div>
 
-              <div className="pt-4 border-t border-slate-200 dark:border-white/10 flex items-center justify-between">
-                <span className="text-xs font-mono text-slate-500 dark:text-slate-400">Print-Ready Vector Artwork</span>
+              <div className="pt-3 sm:pt-4 border-t border-slate-200 dark:border-white/10 flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-2.5 sm:gap-4">
+                <span className="text-xs font-mono text-slate-500 dark:text-slate-400 text-center sm:text-left">Print-Ready Vector Artwork</span>
                 <button
                   onClick={(e) => {
                     e.stopPropagation();
                     setSelectedPoster(poster);
                   }}
-                  className="min-h-[44px] px-5 py-2.5 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold text-xs font-mono flex items-center gap-2 shadow-md shadow-emerald-500/20 active:scale-95 transition-all"
+                  className="min-h-[44px] w-full sm:w-auto px-5 py-2.5 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold text-xs font-mono flex items-center justify-center gap-2 shadow-md shadow-emerald-500/20 active:scale-95 transition-all"
                 >
                   <Eye className="w-4 h-4" />
                   <span>View Lightbox</span>

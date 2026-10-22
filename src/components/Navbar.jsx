@@ -92,7 +92,7 @@ export default function Navbar() {
           </nav>
 
           {/* Action, Dark/Light Theme Switcher & Status */}
-          <div className="hidden md:flex items-center gap-3">
+          <div className="hidden lg:flex items-center gap-3">
             {/* Dark & Light Mode Toggle */}
             <button
               onClick={toggleTheme}

@@ -229,7 +229,7 @@ export default function ModernStageCarousel({
         {/* Card Frame with Top Accent Line */}
         <div className="w-full">
           <SpotlightCard
-            className="p-4 sm:p-7 md:p-9 rounded-2xl sm:rounded-3xl border border-slate-200/90 dark:border-white/15 bg-white/95 dark:bg-[#0d121f]/95 shadow-xl shadow-slate-200/50 dark:shadow-none relative overflow-hidden"
+            className="p-3.5 sm:p-7 md:p-9 rounded-2xl sm:rounded-3xl border border-slate-200/90 dark:border-white/15 bg-white/95 dark:bg-[#0d121f]/95 shadow-xl shadow-slate-200/50 dark:shadow-none relative overflow-hidden"
             spotlightColor={styles.glow}
           >
             {/* Top Radiant Gradient Accent Line */}
@@ -257,7 +257,7 @@ export default function ModernStageCarousel({
       </div>
 
       {/* Interactive Mobile Swipeable Snap Strip & Desktop Grid (Gentle Lift & Glowing Outline) */}
-      <div className="mt-6 sm:mt-8 space-y-3 sm:space-y-4 px-1 sm:px-2">
+      <div className="mt-5 sm:mt-8 space-y-3 sm:space-y-4 px-1 sm:px-2">
         {/* Animated Progress Bar Track with Radiant Indicator */}
         <div className="w-full h-1.5 rounded-full bg-slate-200/80 dark:bg-slate-800/80 overflow-hidden relative">
           <div
@@ -279,10 +279,10 @@ export default function ModernStageCarousel({
                 key={item.id || idx}
                 ref={(el) => (thumbnailRefs.current[idx] = el)}
                 onClick={() => goToSlide(idx)}
-                className={`shrink-0 w-[220px] sm:w-auto snap-start flex items-center gap-2.5 sm:gap-3 p-2.5 rounded-xl sm:rounded-2xl border text-left transition-all duration-300 cursor-pointer ${
+                className={`shrink-0 w-[180px] xs:w-[200px] sm:w-auto snap-start flex items-center gap-2.5 sm:gap-3 p-2 sm:p-2.5 rounded-xl sm:rounded-2xl border text-left transition-all duration-300 cursor-pointer ${
                   isActive
-                    ? `bg-white dark:bg-slate-900 border-transparent ${styles.ring} -translate-y-1 opacity-100 ${styles.activeThumbBg}`
-                    : 'bg-slate-50/70 dark:bg-slate-900/40 border-slate-200/80 dark:border-white/5 opacity-65 hover:opacity-100 hover:-translate-y-0.5 hover:border-slate-300 dark:hover:border-white/20'
+                    ? `bg-white dark:bg-slate-900 border-transparent ${styles.ring} -translate-y-0.5 sm:-translate-y-1 opacity-100 ${styles.activeThumbBg}`
+                    : 'bg-slate-50/70 dark:bg-slate-900/40 border-slate-200/80 dark:border-white/5 opacity-65 hover:opacity-100 hover:border-slate-300 dark:hover:border-white/20'
                 }`}
                 aria-label={`Switch to ${item.title}`}
               >

@@ -4,7 +4,6 @@ import { ThemeProvider } from './context/ThemeContext';
 import InteractiveBackground from './components/InteractiveBackground';
 import Navbar from './components/Navbar';
 import Footer from './components/Footer';
-import MobileBottomBar from './components/MobileBottomBar';
 
 // Dedicated Separate Pages
 import HomePage from './pages/HomePage';
@@ -92,7 +91,7 @@ export default function App() {
             <Navbar />
 
             {/* Dedicated Page Views */}
-            <main className="relative z-10 flex-1 pb-24 lg:pb-0">
+            <main className="relative z-10 flex-1 pb-12 sm:pb-16">
               <Routes>
                 <Route path="/" element={<HomePage />} />
                 <Route path="/web-projects" element={<WebProjectsPage />} />
@@ -104,9 +103,6 @@ export default function App() {
                 <Route path="*" element={<HomePage />} />
               </Routes>
             </main>
-
-            {/* Floating Mobile Bottom Navigation */}
-            <MobileBottomBar />
 
             {/* Footer with Picture & Quick Route Links */}
             <Footer />
