@@ -48,6 +48,8 @@ import {
   getVideoDuration,
   deleteVideoBlob,
 } from '../utils/videoStorage';
+import { uploadMediaToSupabase } from '../services/supabaseService';
+import { isSupabaseConfigured } from '../lib/supabase';
 
 const DELETE_SECURITY_PASSWORD = 'mementomori637';
 
@@ -84,6 +86,10 @@ export default function AdminPage() {
     downloadPortfolioJSON,
     applyRawJSON,
     syncWithGitSeed,
+    isCloudConnected,
+    cloudStatus,
+    isCloudSyncing,
+    syncWithSupabase,
   } = usePortfolio();
 
   // PIN entry state
@@ -237,23 +243,34 @@ export default function AdminPage() {
     showToast('Profile information successfully saved!');
   };
 
-  // File upload helper (converts local file to base64 Data URL, supports drag & drop File or Event)
-  const handleFileUpload = (fileOrEvent, callback) => {
+  // File upload helper (uploads to Supabase Cloud Storage if configured, or converts to base64 Data URL)
+  const handleFileUpload = async (fileOrEvent, callback) => {
     const file = fileOrEvent?.target ? fileOrEvent.target.files?.[0] : fileOrEvent;
-    if (file) {
-      if (file.size > 5 * 1024 * 1024) {
-        alert('File size is larger than 5MB. Please choose a smaller image.');
+    if (!file) return;
+
+    if (isSupabaseConfigured) {
+      try {
+        const publicUrl = await uploadMediaToSupabase(file, 'images');
+        callback(publicUrl);
+        showToast('Image uploaded to Supabase Cloud Storage!');
         return;
+      } catch (err) {
+        console.warn('Supabase image upload failed, falling back to local encoding:', err);
       }
-      const reader = new FileReader();
-      reader.onload = (event) => {
-        callback(event.target.result);
-      };
-      reader.readAsDataURL(file);
     }
+
+    if (file.size > 5 * 1024 * 1024) {
+      alert('File size is larger than 5MB. Please choose a smaller image.');
+      return;
+    }
+    const reader = new FileReader();
+    reader.onload = (event) => {
+      callback(event.target.result);
+    };
+    reader.readAsDataURL(file);
   };
 
-  // Video upload helper (stores file in IndexedDB, auto-extracts duration and thumbnail, supports drag & drop File or Event)
+  // Video upload helper (uploads to Supabase Storage if configured, or saves to IndexedDB)
   const handleVideoUpload = async (fileOrEvent) => {
     const file = fileOrEvent?.target ? fileOrEvent.target.files?.[0] : fileOrEvent;
     if (!file) return;
@@ -262,8 +279,21 @@ export default function AdminPage() {
     try {
       const videoId = editingItem?.data?.id || `video-${Date.now()}`;
 
-      // 1. Save full video file to IndexedDB
-      const videoUri = await saveVideoBlob(videoId, file);
+      // 1. Upload to Supabase Cloud Storage or fallback to IndexedDB
+      let videoUri;
+      if (isSupabaseConfigured) {
+        try {
+          videoUri = await uploadMediaToSupabase(file, 'videos');
+          showToast('Video uploaded to Supabase Cloud Storage!');
+        } catch (err) {
+          console.warn('Supabase video upload failed, saving to local IndexedDB:', err);
+          videoUri = await saveVideoBlob(videoId, file);
+          showToast('Video saved to local IndexedDB storage!');
+        }
+      } else {
+        videoUri = await saveVideoBlob(videoId, file);
+        showToast('Video processed & saved to IndexedDB storage!');
+      }
 
       // 2. Extract Duration automatically
       const duration = await getVideoDuration(file);
@@ -287,8 +317,6 @@ export default function AdminPage() {
           title: prev?.data?.title || file.name.replace(/\.[^/.]+$/, ''),
         },
       }));
-
-      showToast('Video processed & saved to IndexedDB storage!');
     } catch (err) {
       console.error('Video upload failed', err);
       alert('Failed to process video file. Please ensure it is an MP4, WebM, or MOV video.');
@@ -485,13 +513,35 @@ export default function AdminPage() {
             <ShieldCheck className="w-6 h-6" />
           </div>
           <div>
-            <div className="flex items-center gap-2">
+            <div className="flex flex-wrap items-center gap-2">
               <h1 className="text-xl sm:text-2xl font-black text-slate-900 dark:text-white tracking-tight">
                 Portfolio CMS & Manager
               </h1>
               <span className="px-2.5 py-0.5 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-600 dark:text-emerald-400 text-xs font-mono font-bold">
                 Unlocked
               </span>
+              {isCloudConnected ? (
+                <span
+                  className="px-2.5 py-0.5 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-600 dark:text-emerald-400 text-xs font-mono font-bold flex items-center gap-1.5"
+                  title="Synced live with Supabase cloud database"
+                >
+                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+                  <span>Supabase Live</span>
+                </span>
+              ) : isCloudSyncing ? (
+                <span className="px-2.5 py-0.5 rounded-full bg-cyan-500/10 border border-cyan-500/20 text-cyan-600 dark:text-cyan-400 text-xs font-mono font-bold flex items-center gap-1.5">
+                  <Loader2 className="w-3 h-3 animate-spin text-cyan-500" />
+                  <span>Connecting Cloud...</span>
+                </span>
+              ) : (
+                <span
+                  className="px-2.5 py-0.5 rounded-full bg-amber-500/10 border border-amber-500/20 text-amber-600 dark:text-amber-400 text-xs font-mono font-bold flex items-center gap-1.5"
+                  title="Operating in Local Storage fallback mode. Connect Supabase to sync across all devices!"
+                >
+                  <span className="w-1.5 h-1.5 rounded-full bg-amber-500" />
+                  <span>Local Storage Mode</span>
+                </span>
+              )}
             </div>
             <p className="text-xs sm:text-sm text-slate-500 dark:text-slate-400">
               Editing profile and managing Web, Videos, Posters, and Certificates

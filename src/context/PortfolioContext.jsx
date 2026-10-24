@@ -1,11 +1,27 @@
-import React, { createContext, useContext, useState, useEffect } from 'react';
 import portfolioSeed from '../data/portfolio.json';
+import {
+  fetchPortfolioFromSupabase,
+  saveProfileToSupabase,
+  upsertWebProjectToSupabase,
+  deleteWebProjectFromSupabase,
+  upsertVideoEditToSupabase,
+  deleteVideoEditFromSupabase,
+  upsertPosterToSupabase,
+  deletePosterFromSupabase,
+  upsertCertificateToSupabase,
+  deleteCertificateFromSupabase,
+} from '../services/supabaseService';
+import { isSupabaseConfigured } from '../lib/supabase';
 
 const PortfolioContext = createContext(null);
 
 const DEFAULT_PIN = '201605';
 
 export function PortfolioProvider({ children }) {
+  // Cloud database status: 'connected' | 'connecting' | 'local_only' | 'error'
+  const [cloudStatus, setCloudStatus] = useState(isSupabaseConfigured ? 'connecting' : 'local_only');
+  const [isCloudSyncing, setIsCloudSyncing] = useState(false);
+
   // Initialize state from localStorage or default portfolio.json seed
   const [profile, setProfile] = useState(() => {
     try {
@@ -113,6 +129,40 @@ export function PortfolioProvider({ children }) {
     }
   }, [adminPin]);
 
+  // Fetch data from Supabase Cloud on initial load (with fallback to localStorage/seed)
+  const syncWithSupabase = async () => {
+    if (!isSupabaseConfigured) {
+      setCloudStatus('local_only');
+      return false;
+    }
+    setIsCloudSyncing(true);
+    try {
+      const cloudData = await fetchPortfolioFromSupabase();
+      if (cloudData) {
+        if (cloudData.profile) setProfile(cloudData.profile);
+        if (cloudData.webProjects?.length) setWebProjects(cloudData.webProjects);
+        if (cloudData.videoEdits?.length) setVideoEdits(cloudData.videoEdits);
+        if (cloudData.posters?.length) setPosters(cloudData.posters);
+        if (cloudData.certificates?.length) setCertificates(cloudData.certificates);
+        setCloudStatus('connected');
+        return true;
+      } else {
+        setCloudStatus('connected_empty');
+        return true;
+      }
+    } catch (err) {
+      console.warn('Could not sync with Supabase cloud database:', err);
+      setCloudStatus('error');
+      return false;
+    } finally {
+      setIsCloudSyncing(false);
+    }
+  };
+
+  useEffect(() => {
+    syncWithSupabase();
+  }, []);
+
   // Auth methods
   const login = (enteredPin) => {
     if (enteredPin === adminPin) {
@@ -138,7 +188,13 @@ export function PortfolioProvider({ children }) {
 
   // Profile operations
   const updateProfile = (updatedFields) => {
-    setProfile((prev) => ({ ...prev, ...updatedFields }));
+    setProfile((prev) => {
+      const merged = { ...prev, ...updatedFields };
+      if (isSupabaseConfigured) {
+        saveProfileToSupabase(merged);
+      }
+      return merged;
+    });
   };
 
   // Web Projects CRUD
@@ -151,26 +207,37 @@ export function PortfolioProvider({ children }) {
         : (project.tools || '').split(',').map((t) => t.trim()).filter(Boolean),
     };
     setWebProjects((prev) => [newProject, ...prev]);
+    if (isSupabaseConfigured) {
+      upsertWebProjectToSupabase(newProject);
+    }
   };
 
   const updateWebProject = (id, updatedProject) => {
     setWebProjects((prev) =>
-      prev.map((item) =>
-        item.id === id
-          ? {
-              ...item,
-              ...updatedProject,
-              tools: Array.isArray(updatedProject.tools)
-                ? updatedProject.tools
-                : (updatedProject.tools || '').split(',').map((t) => t.trim()).filter(Boolean),
-            }
-          : item
-      )
+      prev.map((item) => {
+        if (item.id === id) {
+          const merged = {
+            ...item,
+            ...updatedProject,
+            tools: Array.isArray(updatedProject.tools)
+              ? updatedProject.tools
+              : (updatedProject.tools || '').split(',').map((t) => t.trim()).filter(Boolean),
+          };
+          if (isSupabaseConfigured) {
+            upsertWebProjectToSupabase(merged);
+          }
+          return merged;
+        }
+        return item;
+      })
     );
   };
 
   const deleteWebProject = (id) => {
     setWebProjects((prev) => prev.filter((item) => item.id !== id));
+    if (isSupabaseConfigured) {
+      deleteWebProjectFromSupabase(id);
+    }
   };
 
   // Video Edits CRUD
@@ -183,26 +250,37 @@ export function PortfolioProvider({ children }) {
         : (video.software || '').split(',').map((s) => s.trim()).filter(Boolean),
     };
     setVideoEdits((prev) => [newVideo, ...prev]);
+    if (isSupabaseConfigured) {
+      upsertVideoEditToSupabase(newVideo);
+    }
   };
 
   const updateVideoEdit = (id, updatedVideo) => {
     setVideoEdits((prev) =>
-      prev.map((item) =>
-        item.id === id
-          ? {
-              ...item,
-              ...updatedVideo,
-              software: Array.isArray(updatedVideo.software)
-                ? updatedVideo.software
-                : (updatedVideo.software || '').split(',').map((s) => s.trim()).filter(Boolean),
-            }
-          : item
-      )
+      prev.map((item) => {
+        if (item.id === id) {
+          const merged = {
+            ...item,
+            ...updatedVideo,
+            software: Array.isArray(updatedVideo.software)
+              ? updatedVideo.software
+              : (updatedVideo.software || '').split(',').map((s) => s.trim()).filter(Boolean),
+          };
+          if (isSupabaseConfigured) {
+            upsertVideoEditToSupabase(merged);
+          }
+          return merged;
+        }
+        return item;
+      })
     );
   };
 
   const deleteVideoEdit = (id) => {
     setVideoEdits((prev) => prev.filter((item) => item.id !== id));
+    if (isSupabaseConfigured) {
+      deleteVideoEditFromSupabase(id);
+    }
   };
 
   // Posters CRUD
@@ -215,26 +293,37 @@ export function PortfolioProvider({ children }) {
         : (poster.software || '').split(',').map((s) => s.trim()).filter(Boolean),
     };
     setPosters((prev) => [newPoster, ...prev]);
+    if (isSupabaseConfigured) {
+      upsertPosterToSupabase(newPoster);
+    }
   };
 
   const updatePoster = (id, updatedPoster) => {
     setPosters((prev) =>
-      prev.map((item) =>
-        item.id === id
-          ? {
-              ...item,
-              ...updatedPoster,
-              software: Array.isArray(updatedPoster.software)
-                ? updatedPoster.software
-                : (updatedPoster.software || '').split(',').map((s) => s.trim()).filter(Boolean),
-            }
-          : item
-      )
+      prev.map((item) => {
+        if (item.id === id) {
+          const merged = {
+            ...item,
+            ...updatedPoster,
+            software: Array.isArray(updatedPoster.software)
+              ? updatedPoster.software
+              : (updatedPoster.software || '').split(',').map((s) => s.trim()).filter(Boolean),
+          };
+          if (isSupabaseConfigured) {
+            upsertPosterToSupabase(merged);
+          }
+          return merged;
+        }
+        return item;
+      })
     );
   };
 
   const deletePoster = (id) => {
     setPosters((prev) => prev.filter((item) => item.id !== id));
+    if (isSupabaseConfigured) {
+      deletePosterFromSupabase(id);
+    }
   };
 
   // Certificates CRUD
@@ -247,26 +336,37 @@ export function PortfolioProvider({ children }) {
         : (cert.skills || '').split(',').map((s) => s.trim()).filter(Boolean),
     };
     setCertificates((prev) => [newCert, ...prev]);
+    if (isSupabaseConfigured) {
+      upsertCertificateToSupabase(newCert);
+    }
   };
 
   const updateCertificate = (id, updatedCert) => {
     setCertificates((prev) =>
-      prev.map((item) =>
-        item.id === id
-          ? {
-              ...item,
-              ...updatedCert,
-              skills: Array.isArray(updatedCert.skills)
-                ? updatedCert.skills
-                : (updatedCert.skills || '').split(',').map((s) => s.trim()).filter(Boolean),
-            }
-          : item
-      )
+      prev.map((item) => {
+        if (item.id === id) {
+          const merged = {
+            ...item,
+            ...updatedCert,
+            skills: Array.isArray(updatedCert.skills)
+              ? updatedCert.skills
+              : (updatedCert.skills || '').split(',').map((s) => s.trim()).filter(Boolean),
+          };
+          if (isSupabaseConfigured) {
+            upsertCertificateToSupabase(merged);
+          }
+          return merged;
+        }
+        return item;
+      })
     );
   };
 
   const deleteCertificate = (id) => {
     setCertificates((prev) => prev.filter((item) => item.id !== id));
+    if (isSupabaseConfigured) {
+      deleteCertificateFromSupabase(id);
+    }
   };
 
   // Get full portfolio data object matching portfolio.json schema
@@ -406,6 +506,12 @@ export function PortfolioProvider({ children }) {
         downloadPortfolioJSON,
         applyRawJSON,
         syncWithGitSeed,
+        // Supabase Cloud State & Methods
+        isCloudConfigured,
+        isCloudConnected: cloudStatus === 'connected',
+        cloudStatus,
+        isCloudSyncing,
+        syncWithSupabase,
       }}
     >
       {children}

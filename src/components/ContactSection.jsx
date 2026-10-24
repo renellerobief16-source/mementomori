@@ -3,6 +3,8 @@ import { Mail, Send, Copy, Check, MessageSquare, Sparkles, MapPin, Phone } from 
 import { Github, Linkedin, Facebook, Instagram, OnlineJobs } from './Icons';
 import confetti from 'canvas-confetti';
 import { usePortfolio } from '../context/PortfolioContext';
+import { submitContactMessageToSupabase } from '../services/supabaseService';
+import { isSupabaseConfigured } from '../lib/supabase';
 
 export default function ContactSection() {
   const { profile } = usePortfolio();
@@ -30,9 +32,13 @@ export default function ContactSection() {
     { name: 'Email', url: `mailto:${profile.email}`, icon: Mail, color: 'text-violet-500' },
   ];
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     if (!formData.name || !formData.email || !formData.message) return;
+
+    if (isSupabaseConfigured) {
+      await submitContactMessageToSupabase(formData);
+    }
 
     // Launch celebratory confetti!
     confetti({
