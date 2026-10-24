@@ -109,6 +109,7 @@ export default function AdminPage() {
   const [changePinModalOpen, setChangePinModalOpen] = useState(false);
   const [newPinInput, setNewPinInput] = useState('');
   const [uploadingVideo, setUploadingVideo] = useState(false);
+  const [isSavingItem, setIsSavingItem] = useState(false);
 
   // Smooth Delete Confirmation State (Protected by "mementomori637")
   const [itemToDelete, setItemToDelete] = useState(null); // { type: 'web'|'video'|'poster'|'cert'|'reset', id: string, title: string }
@@ -1928,33 +1929,56 @@ export default function AdminPage() {
               </button>
               <button
                 type="button"
-                onClick={() => {
+                disabled={isSavingItem}
+                onClick={async () => {
                   if (!editingItem.data.title) {
                     alert('Please enter a title');
                     return;
                   }
 
-                  if (editingItem.type === 'web') {
-                    if (editingItem.isNew) addWebProject(editingItem.data);
-                    else updateWebProject(editingItem.data.id, editingItem.data);
-                  } else if (editingItem.type === 'video') {
-                    if (editingItem.isNew) addVideoEdit(editingItem.data);
-                    else updateVideoEdit(editingItem.data.id, editingItem.data);
-                  } else if (editingItem.type === 'poster') {
-                    if (editingItem.isNew) addPoster(editingItem.data);
-                    else updatePoster(editingItem.data.id, editingItem.data);
-                  } else if (editingItem.type === 'cert') {
-                    if (editingItem.isNew) addCertificate(editingItem.data);
-                    else updateCertificate(editingItem.data.id, editingItem.data);
-                  }
+                  setIsSavingItem(true);
+                  try {
+                    let ok = false;
+                    if (editingItem.type === 'web') {
+                      if (editingItem.isNew) ok = await addWebProject(editingItem.data);
+                      else ok = await updateWebProject(editingItem.data.id, editingItem.data);
+                    } else if (editingItem.type === 'video') {
+                      if (editingItem.isNew) ok = await addVideoEdit(editingItem.data);
+                      else ok = await updateVideoEdit(editingItem.data.id, editingItem.data);
+                    } else if (editingItem.type === 'poster') {
+                      if (editingItem.isNew) ok = await addPoster(editingItem.data);
+                      else ok = await updatePoster(editingItem.data.id, editingItem.data);
+                    } else if (editingItem.type === 'cert') {
+                      if (editingItem.isNew) ok = await addCertificate(editingItem.data);
+                      else ok = await updateCertificate(editingItem.data.id, editingItem.data);
+                    }
 
-                  showToast('Saved successfully!');
-                  setEditingItem(null);
+                    if (ok) {
+                      showToast('Saved & synced to Supabase database! 🎉');
+                    } else {
+                      showToast('Saved locally in browser.');
+                    }
+                    setEditingItem(null);
+                  } catch (err) {
+                    console.error('Save failed', err);
+                    alert('Error saving item: ' + (err.message || 'Unknown error'));
+                  } finally {
+                    setIsSavingItem(false);
+                  }
                 }}
-                className="px-5 py-2.5 rounded-xl bg-cyan-500 hover:bg-cyan-600 text-white text-xs font-mono font-bold flex items-center gap-1.5 shadow-lg shadow-cyan-500/20 active:scale-95"
+                className="px-5 py-2.5 rounded-xl bg-cyan-500 hover:bg-cyan-600 disabled:opacity-50 text-white text-xs font-mono font-bold flex items-center gap-1.5 shadow-lg shadow-cyan-500/20 active:scale-95 transition-all"
               >
-                <Check className="w-4 h-4" />
-                <span>Save Item</span>
+                {isSavingItem ? (
+                  <>
+                    <Loader2 className="w-4 h-4 animate-spin" />
+                    <span>Syncing to Supabase...</span>
+                  </>
+                ) : (
+                  <>
+                    <Check className="w-4 h-4" />
+                    <span>Save Item</span>
+                  </>
+                )}
               </button>
             </div>
           </div>

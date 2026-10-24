@@ -188,61 +188,64 @@ export function PortfolioProvider({ children }) {
   };
 
   // Profile operations
-  const updateProfile = (updatedFields) => {
-    setProfile((prev) => {
-      const merged = { ...prev, ...updatedFields };
-      if (isSupabaseConfigured) {
-        saveProfileToSupabase(merged);
-      }
-      return merged;
-    });
+  const updateProfile = async (updatedFields) => {
+    const merged = { ...profile, ...updatedFields };
+    setProfile(merged);
+    if (isSupabaseConfigured) {
+      return await saveProfileToSupabase(merged);
+    }
+    return true;
   };
 
   // Web Projects CRUD
-  const addWebProject = (project) => {
+  const addWebProject = async (project) => {
     const newProject = {
       ...project,
-      id: project.id || `project-${Date.now()}`,
+      id: project.id || `web-${Date.now()}`,
       tools: Array.isArray(project.tools)
         ? project.tools
         : (project.tools || '').split(',').map((t) => t.trim()).filter(Boolean),
     };
     setWebProjects((prev) => [newProject, ...prev]);
     if (isSupabaseConfigured) {
-      upsertWebProjectToSupabase(newProject);
+      return await upsertWebProjectToSupabase(newProject);
     }
+    return true;
   };
 
-  const updateWebProject = (id, updatedProject) => {
+  const updateWebProject = async (id, updatedProject) => {
+    let merged = null;
     setWebProjects((prev) =>
       prev.map((item) => {
         if (item.id === id) {
-          const merged = {
+          merged = {
             ...item,
             ...updatedProject,
             tools: Array.isArray(updatedProject.tools)
               ? updatedProject.tools
               : (updatedProject.tools || '').split(',').map((t) => t.trim()).filter(Boolean),
           };
-          if (isSupabaseConfigured) {
-            upsertWebProjectToSupabase(merged);
-          }
           return merged;
         }
         return item;
       })
     );
+    if (isSupabaseConfigured && merged) {
+      return await upsertWebProjectToSupabase(merged);
+    }
+    return true;
   };
 
-  const deleteWebProject = (id) => {
+  const deleteWebProject = async (id) => {
     setWebProjects((prev) => prev.filter((item) => item.id !== id));
     if (isSupabaseConfigured) {
-      deleteWebProjectFromSupabase(id);
+      return await deleteWebProjectFromSupabase(id);
     }
+    return true;
   };
 
   // Video Edits CRUD
-  const addVideoEdit = (video) => {
+  const addVideoEdit = async (video) => {
     const newVideo = {
       ...video,
       id: video.id || `video-${Date.now()}`,
@@ -252,40 +255,44 @@ export function PortfolioProvider({ children }) {
     };
     setVideoEdits((prev) => [newVideo, ...prev]);
     if (isSupabaseConfigured) {
-      upsertVideoEditToSupabase(newVideo);
+      return await upsertVideoEditToSupabase(newVideo);
     }
+    return true;
   };
 
-  const updateVideoEdit = (id, updatedVideo) => {
+  const updateVideoEdit = async (id, updatedVideo) => {
+    let merged = null;
     setVideoEdits((prev) =>
       prev.map((item) => {
         if (item.id === id) {
-          const merged = {
+          merged = {
             ...item,
             ...updatedVideo,
             software: Array.isArray(updatedVideo.software)
               ? updatedVideo.software
               : (updatedVideo.software || '').split(',').map((s) => s.trim()).filter(Boolean),
           };
-          if (isSupabaseConfigured) {
-            upsertVideoEditToSupabase(merged);
-          }
           return merged;
         }
         return item;
       })
     );
+    if (isSupabaseConfigured && merged) {
+      return await upsertVideoEditToSupabase(merged);
+    }
+    return true;
   };
 
-  const deleteVideoEdit = (id) => {
+  const deleteVideoEdit = async (id) => {
     setVideoEdits((prev) => prev.filter((item) => item.id !== id));
     if (isSupabaseConfigured) {
-      deleteVideoEditFromSupabase(id);
+      return await deleteVideoEditFromSupabase(id);
     }
+    return true;
   };
 
   // Posters CRUD
-  const addPoster = (poster) => {
+  const addPoster = async (poster) => {
     const newPoster = {
       ...poster,
       id: poster.id || `poster-${Date.now()}`,
@@ -295,40 +302,44 @@ export function PortfolioProvider({ children }) {
     };
     setPosters((prev) => [newPoster, ...prev]);
     if (isSupabaseConfigured) {
-      upsertPosterToSupabase(newPoster);
+      return await upsertPosterToSupabase(newPoster);
     }
+    return true;
   };
 
-  const updatePoster = (id, updatedPoster) => {
+  const updatePoster = async (id, updatedPoster) => {
+    let merged = null;
     setPosters((prev) =>
       prev.map((item) => {
         if (item.id === id) {
-          const merged = {
+          merged = {
             ...item,
             ...updatedPoster,
             software: Array.isArray(updatedPoster.software)
               ? updatedPoster.software
               : (updatedPoster.software || '').split(',').map((s) => s.trim()).filter(Boolean),
           };
-          if (isSupabaseConfigured) {
-            upsertPosterToSupabase(merged);
-          }
           return merged;
         }
         return item;
       })
     );
+    if (isSupabaseConfigured && merged) {
+      return await upsertPosterToSupabase(merged);
+    }
+    return true;
   };
 
-  const deletePoster = (id) => {
+  const deletePoster = async (id) => {
     setPosters((prev) => prev.filter((item) => item.id !== id));
     if (isSupabaseConfigured) {
-      deletePosterFromSupabase(id);
+      return await deletePosterFromSupabase(id);
     }
+    return true;
   };
 
   // Certificates CRUD
-  const addCertificate = (cert) => {
+  const addCertificate = async (cert) => {
     const newCert = {
       ...cert,
       id: cert.id || `cert-${Date.now()}`,
@@ -338,36 +349,40 @@ export function PortfolioProvider({ children }) {
     };
     setCertificates((prev) => [newCert, ...prev]);
     if (isSupabaseConfigured) {
-      upsertCertificateToSupabase(newCert);
+      return await upsertCertificateToSupabase(newCert);
     }
+    return true;
   };
 
-  const updateCertificate = (id, updatedCert) => {
+  const updateCertificate = async (id, updatedCert) => {
+    let merged = null;
     setCertificates((prev) =>
       prev.map((item) => {
         if (item.id === id) {
-          const merged = {
+          merged = {
             ...item,
             ...updatedCert,
             skills: Array.isArray(updatedCert.skills)
               ? updatedCert.skills
               : (updatedCert.skills || '').split(',').map((s) => s.trim()).filter(Boolean),
           };
-          if (isSupabaseConfigured) {
-            upsertCertificateToSupabase(merged);
-          }
           return merged;
         }
         return item;
       })
     );
+    if (isSupabaseConfigured && merged) {
+      return await upsertCertificateToSupabase(merged);
+    }
+    return true;
   };
 
-  const deleteCertificate = (id) => {
+  const deleteCertificate = async (id) => {
     setCertificates((prev) => prev.filter((item) => item.id !== id));
     if (isSupabaseConfigured) {
-      deleteCertificateFromSupabase(id);
+      return await deleteCertificateFromSupabase(id);
     }
+    return true;
   };
 
   // Get full portfolio data object matching portfolio.json schema
