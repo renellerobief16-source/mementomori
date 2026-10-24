@@ -508,7 +508,7 @@ export function PortfolioProvider({ children }) {
         applyRawJSON,
         syncWithGitSeed,
         // Supabase Cloud State & Methods
-        isCloudConfigured,
+        isCloudConfigured: isSupabaseConfigured,
         isCloudConnected: cloudStatus === 'connected',
         cloudStatus,
         isCloudSyncing,
