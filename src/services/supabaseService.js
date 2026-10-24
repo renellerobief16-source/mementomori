@@ -238,11 +238,15 @@ export async function fetchPortfolioFromSupabase() {
 // =========================================================================
 
 export async function saveProfileToSupabase(profile) {
-  if (!isSupabaseConfigured || !supabase) return false;
+  if (!isSupabaseConfigured || !supabase) {
+    console.warn('[Supabase] Supabase is not configured, skipping profile sync.');
+    return false;
+  }
   try {
     const payload = mapProfileToDB(profile);
-    const { error } = await supabase.from('profile').upsert(payload, { onConflict: 'id' });
+    const { data, error } = await supabase.from('profile').upsert(payload, { onConflict: 'id' }).select();
     if (error) throw error;
+    console.log('[Supabase] Profile saved to cloud:', data);
     return true;
   } catch (err) {
     console.error('Failed to save profile to Supabase:', err);
@@ -251,11 +255,15 @@ export async function saveProfileToSupabase(profile) {
 }
 
 export async function upsertWebProjectToSupabase(project) {
-  if (!isSupabaseConfigured || !supabase) return false;
+  if (!isSupabaseConfigured || !supabase) {
+    console.warn('[Supabase] Supabase is not configured, skipping web project sync.');
+    return false;
+  }
   try {
     const payload = mapWebProjectToDB(project);
-    const { error } = await supabase.from('web_projects').upsert(payload, { onConflict: 'id' });
+    const { data, error } = await supabase.from('web_projects').upsert(payload, { onConflict: 'id' }).select();
     if (error) throw error;
+    console.log('[Supabase] Web project saved to cloud:', data);
     return true;
   } catch (err) {
     console.error('Failed to upsert web project:', err);
@@ -268,6 +276,7 @@ export async function deleteWebProjectFromSupabase(id) {
   try {
     const { error } = await supabase.from('web_projects').delete().eq('id', id);
     if (error) throw error;
+    console.log('[Supabase] Web project deleted from cloud:', id);
     return true;
   } catch (err) {
     console.error('Failed to delete web project:', err);
@@ -276,11 +285,15 @@ export async function deleteWebProjectFromSupabase(id) {
 }
 
 export async function upsertVideoEditToSupabase(video) {
-  if (!isSupabaseConfigured || !supabase) return false;
+  if (!isSupabaseConfigured || !supabase) {
+    console.warn('[Supabase] Supabase is not configured, skipping video edit sync.');
+    return false;
+  }
   try {
     const payload = mapVideoEditToDB(video);
-    const { error } = await supabase.from('video_edits').upsert(payload, { onConflict: 'id' });
+    const { data, error } = await supabase.from('video_edits').upsert(payload, { onConflict: 'id' }).select();
     if (error) throw error;
+    console.log('[Supabase] Video edit saved to cloud:', data);
     return true;
   } catch (err) {
     console.error('Failed to upsert video edit:', err);
@@ -293,6 +306,7 @@ export async function deleteVideoEditFromSupabase(id) {
   try {
     const { error } = await supabase.from('video_edits').delete().eq('id', id);
     if (error) throw error;
+    console.log('[Supabase] Video edit deleted from cloud:', id);
     return true;
   } catch (err) {
     console.error('Failed to delete video edit:', err);
@@ -301,11 +315,15 @@ export async function deleteVideoEditFromSupabase(id) {
 }
 
 export async function upsertPosterToSupabase(poster) {
-  if (!isSupabaseConfigured || !supabase) return false;
+  if (!isSupabaseConfigured || !supabase) {
+    console.warn('[Supabase] Supabase is not configured, skipping poster sync.');
+    return false;
+  }
   try {
     const payload = mapPosterToDB(poster);
-    const { error } = await supabase.from('posters').upsert(payload, { onConflict: 'id' });
+    const { data, error } = await supabase.from('posters').upsert(payload, { onConflict: 'id' }).select();
     if (error) throw error;
+    console.log('[Supabase] Poster saved to cloud:', data);
     return true;
   } catch (err) {
     console.error('Failed to upsert poster:', err);
@@ -318,6 +336,7 @@ export async function deletePosterFromSupabase(id) {
   try {
     const { error } = await supabase.from('posters').delete().eq('id', id);
     if (error) throw error;
+    console.log('[Supabase] Poster deleted from cloud:', id);
     return true;
   } catch (err) {
     console.error('Failed to delete poster:', err);
@@ -326,11 +345,15 @@ export async function deletePosterFromSupabase(id) {
 }
 
 export async function upsertCertificateToSupabase(cert) {
-  if (!isSupabaseConfigured || !supabase) return false;
+  if (!isSupabaseConfigured || !supabase) {
+    console.warn('[Supabase] Supabase is not configured, skipping certificate sync.');
+    return false;
+  }
   try {
     const payload = mapCertToDB(cert);
-    const { error } = await supabase.from('certificates').upsert(payload, { onConflict: 'id' });
+    const { data, error } = await supabase.from('certificates').upsert(payload, { onConflict: 'id' }).select();
     if (error) throw error;
+    console.log('[Supabase] Certificate saved to cloud:', data);
     return true;
   } catch (err) {
     console.error('Failed to upsert certificate:', err);
